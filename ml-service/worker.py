@@ -124,7 +124,8 @@ def process_classification_job(job_data):
             
             # Notify Node.js server about classification completion
             try:
-                webhook_url = os.getenv('NODEJS_WEBHOOK_URL', 'http://localhost:3000/api/v1/reports/ml-webhook')
+                # Use localhost for internal communication within the same Render instance
+                webhook_url = os.getenv('NODEJS_WEBHOOK_URL', 'http://127.0.0.1:10000/api/v1/reports/ml-webhook')
                 
                 # Convert MongoDB document to JSON serializable format
                 serializable_report = None
