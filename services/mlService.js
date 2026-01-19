@@ -2,8 +2,13 @@ const redis = require('redis');
 
 class MLService {
   constructor() {
+    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
     this.redisClient = redis.createClient({
-      url: process.env.REDIS_URL || 'redis://localhost:6379'
+      url: redisUrl,
+      socket: {
+        tls: redisUrl.startsWith('rediss://'),
+        rejectUnauthorized: false
+      }
     });
     
     this.redisClient.on('error', (err) => {

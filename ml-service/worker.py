@@ -17,7 +17,14 @@ MONGO_URI = os.getenv('DB_URI', 'mongodb://localhost:27017/CivicResponses')
 ML_SERVICE_URL = os.getenv('ML_SERVICE_URL', 'http://localhost:8000')
 
 # Initialize connections
-redis_client = redis.from_url(REDIS_URL)
+# Initialize connections
+# Handle Redis SSL if URL starts with rediss://
+redis_options = {}
+if REDIS_URL.startswith('rediss://'):
+    redis_options['ssl_cert_reqs'] = None
+
+# Cast to standard Redis client to fix type hint confusion
+redis_client: redis.Redis = redis.from_url(REDIS_URL, **redis_options)
 mongo_client = pymongo.MongoClient(MONGO_URI)
 db = mongo_client.get_database()
 
@@ -164,7 +171,7 @@ def worker_loop():
     while True:
         try:
             # Check for jobs in Redis queue
-            job_data = redis_client.blpop('ml_classification_queue', timeout=5)
+            job_data = redis_client.blpop(['ml_classification_queue'], timeout=5)
             
             if job_data:
                 print(f"Received job: {job_data}")
