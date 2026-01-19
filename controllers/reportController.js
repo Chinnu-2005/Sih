@@ -29,7 +29,7 @@ const createReport = async (req, res) => {
     }
 
     const reportData = {
-      title: 'Processing...', // Temporary title, will be updated by ML
+      title: title || 'processing', // Temporary title, will be updated by ML
       description: description || '',
       location: {
         type: "Point",
