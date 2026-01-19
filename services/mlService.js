@@ -39,6 +39,12 @@ class MLService {
 
   async queueClassificationJob(reportData) {
     try {
+      // Ensure connection is open before pushing
+      if (!this.redisClient.isOpen) {
+        console.log('Redis client not open, attempting to connect...');
+        await this.redisClient.connect();
+      }
+
       const job = {
         reportId: reportData._id.toString(),
         description: reportData.description || '',
