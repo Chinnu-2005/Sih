@@ -3,10 +3,13 @@ const redis = require('redis');
 class MLService {
   constructor() {
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    const isUpstash = redisUrl.includes('upstash.io');
+    const isSecure = redisUrl.startsWith('rediss://');
+
     this.redisClient = redis.createClient({
       url: redisUrl,
       socket: {
-        tls: redisUrl.startsWith('rediss://'),
+        tls: isUpstash || isSecure,
         rejectUnauthorized: false
       }
     });

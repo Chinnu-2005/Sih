@@ -3,11 +3,14 @@ const redis = require('redis');
 
 // Create Redis connection
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+const isUpstash = redisUrl.includes('upstash.io');
+const isSecure = redisUrl.startsWith('rediss://');
+
 const redisClient = redis.createClient({
   url: redisUrl,
   socket: {
-    tls: redisUrl.startsWith('rediss://'),
-    rejectUnauthorized: false // Helps with some self-signed certs or strict Upstash checks
+    tls: isUpstash || isSecure,
+    rejectUnauthorized: false
   }
 });
 
