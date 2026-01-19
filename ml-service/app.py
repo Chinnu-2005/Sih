@@ -233,9 +233,23 @@ async def classify_audio_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Audio processing failed: {str(e)}")
 
 
+@app.get("/")
+async def root():
+    return {"message": "Civic Issue ML Service is running", "docs": "/docs"}
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "mode": "gemini-cloud"}
+
+@app.get("/debug-env")
+async def debug_env():
+    redis_url = os.getenv("REDIS_URL", "Not Set")
+    masked_url = redis_url[:15] + "..." if redis_url != "Not Set" else "Missing"
+    return {
+        "redis_url_prefix": masked_url,
+        "is_upstash": "upstash" in redis_url,
+        "worker_running": "Check logs"
+    }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

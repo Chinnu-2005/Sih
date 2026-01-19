@@ -16,6 +16,10 @@ REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379')
 MONGO_URI = os.getenv('DB_URI', 'mongodb://localhost:27017/CivicResponses')
 ML_SERVICE_URL = os.getenv('ML_SERVICE_URL', 'http://localhost:8000')
 
+# For Render deployment, use localhost since worker runs in same container as ML service
+if 'civic-ml-service' in ML_SERVICE_URL:
+    ML_SERVICE_URL = 'http://localhost:8000'
+
 # Initialize connections
 # Initialize connections
 # Handle Redis SSL
