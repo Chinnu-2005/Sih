@@ -124,8 +124,8 @@ def process_classification_job(job_data):
             
             # Notify Node.js server about classification completion
             try:
-                # Use localhost for internal communication within the same Render instance
-                webhook_url = os.getenv('NODEJS_WEBHOOK_URL', 'http://127.0.0.1:10000/api/v1/reports/ml-webhook')
+                # Use Render internal DNS for service-to-service communication
+                webhook_url = os.getenv('NODEJS_WEBHOOK_URL', 'http://civic-reports-api:10000/api/v1/reports/ml-webhook')
                 
                 # Convert MongoDB document to JSON serializable format
                 serializable_report = None
@@ -168,6 +168,16 @@ def worker_loop():
     print(f"Redis URL: {REDIS_URL}")
     print(f"MongoDB URI: {MONGO_URI}")
     print(f"ML Service URL: {ML_SERVICE_URL}")
+    
+    # Test Redis Connection
+    try:
+        print("Testing Redis connection...")
+        redis_client.ping()
+        print("✅ Redis connection successful!")
+        print(f"Waiting for jobs on queue: 'ml_classification_queue'")
+    except Exception as redis_e:
+        print(f"❌ Redis connection FAILED: {str(redis_e)}")
+        print("Worker cannot function without Redis. Retrying in loop...")
     
     while True:
         try:
