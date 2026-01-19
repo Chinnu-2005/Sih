@@ -10,6 +10,28 @@ services:
         value: production
       - key: REDIS_URL
         sync: false
+      - key: DB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_SECRET_KEY
+        sync: false
+      - key: ML_SERVICE_URL
+        value: http://civic-ml-service:8000
+      - key: APTOS_NODE_URL
+        value: https://fullnode.testnet.aptoslabs.com/v1
+      - key: APTOS_ADMIN_PRIVATE_KEY
+        sync: false
+      - key: APTOS_CONTRACT_ADDRESS
+        sync: false
+      - key: DISABLE_ML_PROCESSING
+        value: false
 
   - type: web
     name: civic-ml-service
