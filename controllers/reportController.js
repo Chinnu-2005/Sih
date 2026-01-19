@@ -16,7 +16,7 @@ const createReport = async (req, res) => {
     console.log('Request body:', req.body);
     console.log('Request files:', req.files);
     
-    const { description, latitude, longitude, address } = req.body || {};
+    const { title, description, category, latitude, longitude, address } = req.body || {};
     const userId = req.user.userId;
     
     // Validate coordinates
@@ -29,14 +29,14 @@ const createReport = async (req, res) => {
     }
 
     const reportData = {
-      title: title || 'processing', // Temporary title, will be updated by ML
+      title: title || 'Processing...', // Use user title if provided
       description: description || '',
       location: {
         type: "Point",
         coordinates: [parseFloat(longitude), parseFloat(latitude)] // [lng, lat]
       },
       address,
-      department: 'Processing', // Will be classified by ML
+      department: category || 'Processing', // Use user category if provided
       severity: 'MEDIUM', // Will be classified by ML
       userId,
       reportStatus: 'SUBMITTED'
@@ -47,8 +47,9 @@ const createReport = async (req, res) => {
       // Upload image if provided
       if (req.files.image && req.files.image[0]) {
         try {
+          console.log('Uploading image to Cloudinary...');
           const imageResult = await new Promise((resolve, reject) => {
-            cloudinary.uploader.upload_stream(
+            const uploadStream = cloudinary.uploader.upload_stream(
               {
                 folder: 'civic_reports/images',
                 transformation: [{ width: 800, height: 600, crop: 'limit' }]
@@ -57,30 +58,34 @@ const createReport = async (req, res) => {
                 if (error) reject(error);
                 else resolve(result);
               }
-            ).end(req.files.image[0].buffer);
+            );
+            uploadStream.end(req.files.image[0].buffer);
           });
           
           reportData.image_url = imageResult.secure_url;
           console.log('Image uploaded to Cloudinary:', imageResult.secure_url);
         } catch (uploadError) {
           console.error('Image upload error:', uploadError);
+          // Don't fail the whole request, but log it
         }
       }
       
       // Upload audio if provided
       if (req.files.voice && req.files.voice[0]) {
         try {
+          console.log('Uploading audio to Cloudinary...');
           const audioResult = await new Promise((resolve, reject) => {
-            cloudinary.uploader.upload_stream(
+            const uploadStream = cloudinary.uploader.upload_stream(
               {
                 folder: 'civic_reports/audio',
-                resource_type: 'video' // Cloudinary uses 'video' for audio files
+                resource_type: 'video'
               },
               (error, result) => {
                 if (error) reject(error);
                 else resolve(result);
               }
-            ).end(req.files.voice[0].buffer);
+            );
+            uploadStream.end(req.files.voice[0].buffer);
           });
           
           reportData.voice_url = audioResult.secure_url;
@@ -91,8 +96,15 @@ const createReport = async (req, res) => {
       }
     }
     
-    const report = await Report.create(reportData);
-    console.log('📝 Report created in DB:', report._id);
+    console.log('Creating report in DB with data:', JSON.stringify(reportData, null, 2));
+    let report;
+    try {
+      report = await Report.create(reportData);
+      console.log('📝 Report created in DB:', report._id);
+    } catch (dbError) {
+      console.error('❌ DB Creation Error:', dbError);
+      return res.status(500).json({ error: "Database error: " + dbError.message });
+    }
 
     // Record on blockchain (truly non-blocking with timeout)
     setImmediate(async () => {
@@ -142,8 +154,9 @@ const createReport = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("Create report error:", error);
-    res.status(500).json({ error: "Failed to create report" });
+    console.error("Create report CRITICAL error:", error);
+    console.error(error.stack);
+    res.status(500).json({ error: "Failed to create report: " + error.message });
   }
 };
 
