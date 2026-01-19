@@ -33,7 +33,7 @@ const reportSchema = new Schema(
     },
     department: {
       type: String,
-      enum: ['Roads', 'Water', 'Electricity', 'Sanitation', 'Health', 'Environment', 'Safety', 'Processing', 'Other'],
+      enum: ['General', 'Roads', 'Water', 'Electricity', 'Sanitation', 'Health', 'Environment', 'Safety', 'Processing', 'Other'],
       default: 'Processing'
     },
     reportStatus: {
@@ -69,7 +69,7 @@ const reportSchema = new Schema(
     },
     mlDepartment: {
       type: String,
-      enum: ['Roads', 'Water', 'Electricity', 'Sanitation', 'Health', 'Environment', 'Safety', 'Other']
+      enum: ['General', 'Roads', 'Water', 'Electricity', 'Sanitation', 'Health', 'Environment', 'Safety', 'Other']
     },
     mlTitle: {
       type: String

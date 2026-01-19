@@ -434,6 +434,17 @@ const mlWebhook = async (req, res) => {
       { new: true }
     );
     
+    // Send real-time update via Socket.IO
+    if (global.io) {
+      global.io.to(`report-${reportId}`).emit('report-status-update', {
+        reportId: reportId,
+        status: 'ML_PROCESSED',
+        updatedReport: updatedReportFromDB,
+        message: 'AI analysis complete!'
+      });
+      console.log('✅ Real-time update sent for report ML classification:', reportId);
+    }
+    
     console.log('Database Updated Successfully!');
     console.log('Updated Report:', JSON.stringify(updatedReportFromDB, null, 2));
     console.log('='.repeat(50));
