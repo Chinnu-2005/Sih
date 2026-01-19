@@ -2,14 +2,20 @@ const redis = require('redis');
 
 class MLService {
   constructor() {
-    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-    const isUpstash = redisUrl.includes('upstash.io');
+    let redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    
+    // Auto-fix Upstash URLs to use secure protocol
+    if (redisUrl.includes('upstash.io') && redisUrl.startsWith('redis://')) {
+      console.log('🔒 Upgrading Upstash URL to rediss://');
+      redisUrl = redisUrl.replace('redis://', 'rediss://');
+    }
+    
     const isSecure = redisUrl.startsWith('rediss://');
 
     this.redisClient = redis.createClient({
       url: redisUrl,
       socket: {
-        tls: isUpstash || isSecure,
+        tls: isSecure, // Only enable TLS if protocol is rediss://
         rejectUnauthorized: false
       }
     });

@@ -18,7 +18,11 @@ ML_SERVICE_URL = os.getenv('ML_SERVICE_URL', 'http://localhost:8000')
 
 # Initialize connections
 # Initialize connections
-# Handle Redis SSL if URL starts with rediss://
+# Handle Redis SSL
+if 'upstash.io' in REDIS_URL and REDIS_URL.startswith('redis://'):
+    print('🔒 Upgrading Upstash URL to rediss://')
+    REDIS_URL = REDIS_URL.replace('redis://', 'rediss://')
+
 redis_options = {}
 if REDIS_URL.startswith('rediss://'):
     redis_options['ssl_cert_reqs'] = None
